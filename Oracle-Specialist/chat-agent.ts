@@ -24,25 +24,55 @@ async function bootstrap(): Promise<void> {
     PrivateKey.fromStringECDSA(process.env.PRIVATE_KEY!),
   );
 
-  const getExternalDataTool = new DynamicTool({
-  name: "get_dynamic_apy",
-  description: "Call this to get Apy for different strategies on Hedera Network, staratagies include Native staking, Bonzo Finance and Starader Labs",
-  func: async () => {
-    try {
-    
-      const response = await fetch(`https://gist.githubusercontent.com/yashsharma22003/8f5172422f5f9df4087e07a6251b8042/raw/d31da862822de0fabb0b38685b1d35bddc80e7f4/HbarApy.json`);
-      if (!response.ok) {
-        return `Error: API call failed with status ${response.status}`;
-      }
-      
-      const data = await response.json();
-      
-      // Return the data as a string (agents work best with string I/O)
-      return JSON.stringify(data, null, 2);
-    } catch (error: any) {
-      return `Error executing tool: ${error.message}`;
-    }
-  },
+ const getHbarApy = new DynamicTool({
+    name: "get_hbar_apy",
+    description: "Call this to get the APY for HBAR staking and DeFi lending strategies (Native Staking, Bonzo Finance, Stader Labs) on the Hedera Network.",
+    func: async () => {
+        try {
+            // URL for HBAR APY data
+            const url = `https://gist.githubusercontent.com/yashsharma22003/8f5172422f5f9df4087e07a6251b8042/raw/d31da862822de0fabb0b38685b1d35bddc80e7f4/HbarApy.json`;
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                return `Error: API call to HBAR endpoint failed with status ${response.status} from ${url}`;
+            }
+            
+            const data = await response.json();
+            
+            // Return the data as a string for the agent to process
+            return JSON.stringify(data, null, 2);
+
+        } catch (error: any) {
+            return `Error executing getHbarApy tool: ${error.message}`;
+        }
+    },
+});
+
+// --- 2. Tool for fetching USDC APY data ---
+ const getUsdcApy = new DynamicTool({
+    name: "get_usdc_apy",
+    description: "Call this to get the APY for USDC lending strategies on the Hedera Network.",
+    func: async () => {
+        try {
+            // URL for USDC APY data
+            const url = `https://gist.githubusercontent.com/yashsharma22003/4918c5d38cba7ec40f27c4d4aab0c112/raw/302d9253119aa4a09781b9182e1fb203452b6d58/USDCApy.json`;
+            
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                return `Error: API call to USDC endpoint failed with status ${response.status} from ${url}`;
+            }
+            
+            const data = await response.json();
+            
+            // Return the data as a string for the agent to process
+            return JSON.stringify(data, null, 2);
+
+        } catch (error: any) {
+            return `Error executing getUsdcApy tool: ${error.message}`;
+        }
+    },
 });
 
   // Prepare Hedera toolkit (load all tools by default)
@@ -64,7 +94,7 @@ async function bootstrap(): Promise<void> {
 const hederaTools = hederaAgentToolkit.getTools();
 
 // 2. Add your custom tool to the list
-const tools = [...hederaTools, getExternalDataTool];
+const tools = [...hederaTools, getHbarApy, getUsdcApy];
 
   const agent = await createStructuredChatAgent({
     llm,
