@@ -20,7 +20,7 @@ const getHbarApy = new DynamicTool({
   name: "get_hbar_apy",
   description: "Call this to get the APY for HBAR staking and DeFi lending strategies (Native Staking, Bonzo Finance, Stader Labs) on the Hedera Network.",
  
- func: async () => {
+ func: async () => {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     try {
       const url = `https://gist.githubusercontent.com/yashsharma22003/8f5172422f5f9df4087e07a6251b8042/raw/d31da862822de0fabb0b38685b1d35bddc80e7f4/HbarApy.json`;
 
@@ -97,36 +97,51 @@ async function initializeAgent() {
   // 5. Define the JSON-enforcing prompt
   // 5. Define the JSON-enforcing prompt
   const systemMessage = `You are an expert financial data assistant.
-  IMPORTANT: When the user asks for data (like APY for HBAR or USDC), you MUST:
-  1. Call the correct tool (getHbarApy or getUsdcApy).
-  2. Format the raw tool data into the specified JSON schema.
-  3. Your *entire response* must be **ONLY** the valid JSON object.
-  4. DO NOT add any conversational text or markdown.
 
-  JSON Schema:
-  {{
-    "asset": "string",
-    "lastUpdated": "string",
-    "strategies": [
-      {{
-        "name": "string",
-        "risk": "string",
-        "apy": "string",
-        "lockup": "string",
-        "description": "string"
-      }}
-    ]
-  }}
-  
-  For all other general conversation, answer as a helpful assistant.
+  ## Task
+  You have two jobs:
+  1.  **Call Tools:** When the user asks for APY data, call the correct tool.
+  2.  **Format Answer:** After the tool runs, format its output into the user's requested JSON.
 
-  ---
-  Here are the tools you can use:
+  ## JOB 1: Tool Calling
+  You have access to the following tools:
   {tools}
 
-  The "tool" key in your JSON response must be one of the following:
-  {tool_names}
-  ---`;
+  To use a tool, you MUST respond with **ONLY** a JSON object in this *exact* format.
+  Do NOT include any other text, thoughts, or explanations.
+
+  \`\`\`json
+  {{
+    "action": "name_of_the_tool",
+    "action_input": {{}}
+  }}
+  \`\`\`
+  
+  * The "action" must be one of: {tool_names}
+  * The "action_input" **MUST ALWAYS BE AN EMPTY OBJECT** ({{}}) for these tools.
+
+  ## JOB 2: Final Answer Formatting
+  After you have called a tool and received data, you MUST provide your final answer to the user.
+  This final answer must be **ONLY** the valid JSON object in the schema below.
+  Do NOT add any conversational text or markdown.
+
+  ### Final Output JSON Schema:
+  {{
+  "asset": "string",
+  "lastUpdated": "string",
+ "strategies": [
+ {{
+ "name": "string",
+ "risk": "string",
+"apy": "string",
+ "lockup": "string",
+ "description": "string"
+}}
+ ]
+  }}
+
+  ## Other Conversation
+  If the user is not asking for APY data (e.g., "Hello"), just answer as a helpful assistant.`;
 
  const prompt = ChatPromptTemplate.fromMessages([
     ['system', systemMessage],
