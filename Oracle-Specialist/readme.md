@@ -23,3 +23,7 @@
 - 1. **50% to Bonzo Finance HBAR Lending**: 499.97 HBAR (9.63% APY)
 - 2. **30% to Stader HBARX Liquid Staking**: 299.98 HBAR (4.18% APY)
 - 3. **20% to Native HBAR Staking**: 199.99 HBAR (2.53% APY)
+
+## HSC TOPICS
+
+- APY Topic: 0.0.7278410

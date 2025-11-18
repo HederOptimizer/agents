@@ -9,7 +9,7 @@ import { Client, PrivateKey } from '@hashgraph/sdk';
 import * as dotenv from 'dotenv';
 import { DynamicTool } from "@langchain/core/tools";
 import express, { Request, Response } from 'express'; // Import Express
-import { z } from "zod";
+// import { z } from "zod";
 
 // Load environment variables immediately
 dotenv.config();
@@ -70,7 +70,7 @@ async function initializeAgent() {
 
   // 1. Initialise LLM
   const llm = new ChatGroq({
-    model: 'qwen/qwen3-32b',
+    model: 'llama-3.3-70b-versatile',
     apiKey: process.env.GROQ_API_KEY,
   });
 
@@ -91,57 +91,104 @@ async function initializeAgent() {
   });
 
   // 4. Combine all tools
-  const hederaTools = hederaAgentToolkit.getTools();
-  const tools = [getHbarApy, getUsdcApy];
+ const hederaTools = hederaAgentToolkit.getTools();
+  const tools = [getHbarApy];
 
   // 5. Define the JSON-enforcing prompt
   // 5. Define the JSON-enforcing prompt
-  const systemMessage = `You are an expert financial data assistant.
+ const systemMessage = `You are an expert financial data assistant.
+
+
 
   ## Task
+
   You have two jobs:
+
   1.  **Call Tools:** When the user asks for APY data, call the correct tool.
+
   2.  **Format Answer:** After the tool runs, format its output into the user's requested JSON.
 
+
+
   ## JOB 1: Tool Calling
+
   You have access to the following tools:
+
   {tools}
 
+
+
   To use a tool, you MUST respond with **ONLY** a JSON object in this *exact* format.
+
   Do NOT include any other text, thoughts, or explanations.
 
+
+
   \`\`\`json
+
   {{
+
     "action": "name_of_the_tool",
+
     "action_input": {{}}
+
   }}
+
   \`\`\`
-  
+
+ 
+
   * The "action" must be one of: {tool_names}
+
   * The "action_input" **MUST ALWAYS BE AN EMPTY OBJECT** ({{}}) for these tools.
 
+
+
   ## JOB 2: Final Answer Formatting
+
   After you have called a tool and received data, you MUST provide your final answer to the user.
+
   This final answer must be **ONLY** the valid JSON object in the schema below.
+
   Do NOT add any conversational text or markdown.
 
+
+
   ### Final Output JSON Schema:
+
   {{
+
   "asset": "string",
+
   "lastUpdated": "string",
+
  "strategies": [
+
  {{
+
  "name": "string",
+
  "risk": "string",
+
 "apy": "string",
+
  "lockup": "string",
+
  "description": "string"
+
 }}
+
  ]
+
   }}
 
+
+
   ## Other Conversation
+
   If the user is not asking for APY data (e.g., "Hello"), just answer as a helpful assistant.`;
+
+
 
  const prompt = ChatPromptTemplate.fromMessages([
     ['system', systemMessage],
